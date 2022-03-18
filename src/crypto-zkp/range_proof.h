@@ -2,8 +2,8 @@
 // Created by Sword03 on 2021/6/8.
 //
 
-#ifndef CPP_MPC_RANGE_PROOF_H
-#define CPP_MPC_RANGE_PROOF_H
+#ifndef SAFEHERON_CRYPTO_ZKP_RANGE_PROOF_H
+#define SAFEHERON_CRYPTO_ZKP_RANGE_PROOF_H
 
 #include <string>
 #include "crypto-bn/bn.h"
@@ -41,4 +41,4 @@ public:
 }
 }
 }
-#endif //CPP_MPC_RANGE_PROOF_H
+#endif //SAFEHERON_CRYPTO_ZKP_RANGE_PROOF_H

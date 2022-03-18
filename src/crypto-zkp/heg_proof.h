@@ -2,8 +2,8 @@
 // Created by Sword03 on 2021/6/15.
 //
 
-#ifndef CPP_MPC_HEG_PROOF_H
-#define CPP_MPC_HEG_PROOF_H
+#ifndef SAFEHERON_CRYPTO_ZKP_HEG_PROOF_H
+#define SAFEHERON_CRYPTO_ZKP_HEG_PROOF_H
 
 #include <string>
 #include "crypto-bn/bn.h"
@@ -78,4 +78,4 @@ public:
 
 
 
-#endif //CPP_MPC_HEG_PROOF_H
+#endif //SAFEHERON_CRYPTO_ZKP_HEG_PROOF_H
