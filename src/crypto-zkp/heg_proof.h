@@ -14,6 +14,18 @@ namespace safeheron{
 namespace zkp{
 namespace heg{
 
+/** @brief This is a proof of knowledge that a pair of group elements {D, E}
+ * form a valid homomorphic ElGamal encryption (”in the exponent”) using public key Y .
+ * (HEG is defined in B. Schoenmakers and P. Tuyls. Practical Two-Party Computation Based on the Conditional Gate)
+ * Specifically, the witness is ω = (x, r), the statement is δ = (G, H, Y, D, E).
+ * The relation R outputs 1 if D = xH+rY , E = rG (for the case of G=H this is ElGamal)
+ *
+ *
+ * Statement: δ = (G, H, Y, D, E), where:
+ * Witness:   ω = (x, r)
+ * Prove relation: D = xH + rY and E=rG
+ */
+
 struct HomoElGamalWitness {
     safeheron::bignum::BN r_;
     safeheron::bignum::BN x_;
@@ -41,22 +53,6 @@ public:
     curve::CurvePoint A3_;
     safeheron::bignum::BN z1_;
     safeheron::bignum::BN z2_;
-    /** This is a proof of knowledge that a pair of group elements {D, E}
-     * form a valid homomorphic ElGamal encryption (”in the exponent”) using public key Y .
-     * (HEG is defined in B. Schoenmakers and P. Tuyls. Practical Two-Party Computation Based on the Conditional Gate)
-     * Specifically, the witness is ω = (x, r), the statement is δ = (G, H, Y, D, E).
-     * The relation R outputs 1 if D = xH+rY , E = rG (for the case of G=H this is ElGamal)
-     *
-     *
-     * Statement: δ = (G, H, Y, D, E), where:
-     *    - G = g
-     *    - H = hG, for random h
-     *    - Y = yG, for random y
-     *    - D = xH + rY
-     *    - E = rG
-     * Witness:   ω = (x, r)
-     * Prove relation: D = xH + rY and E=rG
-     */
     void Prove(const HomoElGamalStatement &delta, const HomoElGamalWitness &witness);
     void ProveWithR(const HomoElGamalStatement &delta, const HomoElGamalWitness &witness, const safeheron::bignum::BN &s1_lt_curveN, const safeheron::bignum::BN &s2_lt_curveN);
     bool Verify(const HomoElGamalStatement &delta)const;

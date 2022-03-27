@@ -125,7 +125,7 @@ TEST(ZKP, PailProof)
     EXPECT_TRUE(proof.ToJsonString(jsonStr));
     EXPECT_TRUE(proof2.FromJsonString(jsonStr));
     EXPECT_TRUE(proof2.Verify(pail_pub, index, point.x(), point.y()));
-    for(int i = 0; i < proof.y_N_arr_.size(); ++i){
+    for(size_t i = 0; i < proof.y_N_arr_.size(); ++i){
         EXPECT_TRUE(proof.y_N_arr_[i] == proof2.y_N_arr_[i]);
     }
 

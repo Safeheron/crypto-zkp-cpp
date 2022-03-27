@@ -14,6 +14,12 @@ namespace safeheron{
 namespace zkp {
 namespace range_proof{
 
+/**
+ * @brief This protocol is based on the NIZK protocol in Paper "Fast multiparty threshold ECDSA with fast trustless setup".
+ *
+ * See "A.1 Range Proof" for full details.
+ */
+
 class AliceRangeProof {
 public:
     safeheron::bignum::BN z_;

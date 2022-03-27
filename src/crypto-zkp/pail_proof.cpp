@@ -27,13 +27,13 @@ using google::protobuf::util::JsonParseOptions;
 using namespace safeheron::encode;
 using namespace safeheron::rand;
 
-#define PRIME_UTIL 2048
+#define PRIME_UTIL 6370
 
 namespace safeheron{
 namespace zkp {
 namespace pail {
 
-void prime_util(int n, std::vector<int> &prime_arr){
+static void prime_util(int n, std::vector<int> &prime_arr){
     assert(n > 0);
     prime_arr.clear();
     if(n < 2) return;
@@ -48,7 +48,7 @@ void prime_util(int n, std::vector<int> &prime_arr){
     }
 }
 
-void uint_to_byte4(uint8_t buf[4], unsigned int ui){
+static void uint_to_byte4(uint8_t buf[4], unsigned int ui){
     // Big endian
     buf[3] = ui & 0x000000ff;
     buf[2] = (ui & 0x0000ff00) >> 8;

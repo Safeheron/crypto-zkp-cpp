@@ -14,6 +14,12 @@ namespace safeheron{
 namespace zkp {
 namespace dlog {
 
+/**
+ * @brief This protocol is based on the RFC 8235 Schnorr Non-interactive Zero-Knowledge Proof:
+ *
+ * See https://datatracker.ietf.org/doc/html/rfc8235 for full details.
+ */
+
 class DLogProof {
 private:
     void InternalProve(const safeheron::bignum::BN &sk, const curve::CurvePoint &g, const safeheron::bignum::BN &order);
