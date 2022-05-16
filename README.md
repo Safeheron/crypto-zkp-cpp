@@ -30,11 +30,12 @@ git clone https://github.com/safeheron/crypto-zkp-cpp.git
 cd crypto-zkp-cpp
 mkdir build && cd build
 # Run "cmake .. -DOPENSSL_ROOT_DIR=Your-Root-Directory-of-OPENSSL" instead of the command below on Mac OS.
-cmake ..
+# Turn on the switcher to enable tests; by default, turn off it if you don't wanna to build the test cases.
+cmake .. -DENABLE_TESTS=ON
 # Add the path to the LD_LIBRARY_PATH environment variable on Mac OS; Ignore it on Linux
 export LIBRARY_PATH=$LIBRARY_PATH:/usr/local/lib/
 make
-make test
+make test # If you set ENABLE_TESTS ON
 sudo make install
 ```
 
