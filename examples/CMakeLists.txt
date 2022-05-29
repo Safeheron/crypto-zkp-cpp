@@ -10,21 +10,23 @@ find_package(PkgConfig REQUIRED)
 pkg_search_module(PROTOBUF REQUIRED protobuf)  # this looks for *.pc file
 include_directories(${PROTOBUF_INCLUDE_DIRS})
 
-find_package(GTest REQUIRED)
 #set(OPENSSL_USE_STATIC_LIBS TRUE)
 find_package(OpenSSL REQUIRED)
 find_package(CryptoZKP REQUIRED)
 
-add_executable(zkp-test zkp-test.cpp)
-target_include_directories(zkp-test PUBLIC
+add_executable(example example.cpp)
+target_include_directories(example PUBLIC
         ${CryptoZKP_INCLUDE_DIRS}
         ${OPENSSL_INCLUDE_DIR}
-        ${GTEST_INCLUDE_DIRS}
+        /usr/local/include  # This directory is included default on linux but not on Mac os
 )
 
-target_link_libraries(zkp-test
+# This directory is included default on linux but not on Mac os
+target_link_directories(example PUBLIC /usr/local/lib)
+
+target_link_libraries(example
         CryptoZKP
-        ${GTEST_BOTH_LIBRARIES}
+        OpenSSL::Crypto
         ${PROTOBUF_LINK_LIBRARIES}
         pthread )
 
