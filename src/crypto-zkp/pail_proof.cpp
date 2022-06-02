@@ -62,9 +62,9 @@ static void uint_to_byte4(uint8_t buf[4], unsigned int ui){
 
 }
 
-void PailProof::GenerateXs(std::vector<BN> &x_arr, const BN &index, const BN &point_x, const BN &point_y, const BN &N, uint proof_iters) const{
+void PailProof::GenerateXs(std::vector<BN> &x_arr, const BN &index, const BN &point_x, const BN &point_y, const BN &N, uint32_t proof_iters) const{
     x_arr.clear();
-    uint i = 0;
+    uint32_t i = 0;
     int n = 0;
     int j = 0;
     // SHA256_DIGEST_LENGTH = 32
@@ -129,17 +129,17 @@ void PailProof::GenerateXs(std::vector<BN> &x_arr, const BN &index, const BN &po
     //delete [] blocks_buf;
 }
 
-void PailProof::Prove(const PailPrivKey &pail_priv, const BN &index, const BN &point_x, const BN &point_y, uint proof_iters) {
+void PailProof::Prove(const PailPrivKey &pail_priv, const BN &index, const BN &point_x, const BN &point_y, uint32_t proof_iters) {
     vector<BN> x_arr;
     BN M = pail_priv.n().InvM(pail_priv.lambda());
     GenerateXs(x_arr, index, point_x, point_y, pail_priv.n(), proof_iters);
-    for(uint i = 0; i < proof_iters; ++i){
+    for(uint32_t i = 0; i < proof_iters; ++i){
         BN y_N = x_arr[i].PowM(M, pail_priv.n());
         y_N_arr_.push_back(y_N);
     }
 }
 
-bool PailProof::Verify(const PailPubKey &pail_pub, const BN &index, const BN &point_x, const BN &point_y, uint proof_iters) const {
+bool PailProof::Verify(const PailPubKey &pail_pub, const BN &index, const BN &point_x, const BN &point_y, uint32_t proof_iters) const {
     if(pail_pub.n().BitLength() < 2047)return false;
 
     // Check the pail N
@@ -152,7 +152,7 @@ bool PailProof::Verify(const PailPubKey &pail_pub, const BN &index, const BN &po
     vector<BN> x_arr;
     GenerateXs(x_arr, index, point_x, point_y, pail_pub.n(), proof_iters);
     if (x_arr.size() != proof_iters) return false;
-    for (uint i = 0; i < proof_iters; ++i) {
+    for (uint32_t i = 0; i < proof_iters; ++i) {
         BN x = y_N_arr_[i].PowM(pail_pub.n(), pail_pub.n());
         if (x != x_arr[i]) {
             return false;
