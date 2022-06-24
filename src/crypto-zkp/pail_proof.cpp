@@ -43,13 +43,17 @@ static void prime_util(int n, std::vector<int> &prime_arr){
     prime_arr.clear();
     if(n < 2) return;
     for(int i = 3; i <= n; i++){
+        bool is_prime = true;
         for(int p: prime_arr){
             if(p * p >= i) {
-                prime_arr.push_back(i);
                 break;
             }
-            if(i % p == 0) break;
+            if(i % p == 0) {
+                is_prime = false;
+                break;
+            }
         }
+        if(is_prime)prime_arr.push_back(i);
     }
 }
 
@@ -67,9 +71,7 @@ void PailProof::GenerateXs(std::vector<BN> &x_arr, const BN &index, const BN &po
     uint32_t i = 0;
     int n = 0;
     int j = 0;
-    // SHA256_DIGEST_LENGTH = 32
     int N_blocks = 1 + N.BitLength() / (CSHA256::OUTPUT_SIZE * 8);
-    // uint8_t * blocks_buf = new uint8_t[N_blocks * SHA256_DIGEST_LENGTH];
     std::unique_ptr<uint8_t[]> blocks_buf(new uint8_t[N_blocks * CSHA256::OUTPUT_SIZE]);
 
     memset(blocks_buf.get(), 0, N_blocks * CSHA256::OUTPUT_SIZE);
@@ -125,8 +127,6 @@ void PailProof::GenerateXs(std::vector<BN> &x_arr, const BN &index, const BN &po
             n ++;
         }
     }
-
-    //delete [] blocks_buf;
 }
 
 void PailProof::Prove(const PailPrivKey &pail_priv, const BN &index, const BN &point_x, const BN &point_y, uint32_t proof_iters) {
