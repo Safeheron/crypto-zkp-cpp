@@ -103,13 +103,13 @@ void PailProof::GenerateXs(std::vector<BN> &x_arr, const BN &index, const BN &po
             uint_to_byte4(byte4, n);
             sha256.Write( byte4, 4);
             // index
-            sha256.Write((const uint8_t *)(str.c_str()), str.length());
+            sha256.Write((const uint8_t *)(index_buf.c_str()), index_buf.length());
             // point_x
-            sha256.Write((const uint8_t *)(str.c_str()), str.length());
+            sha256.Write((const uint8_t *)(point_x_buf.c_str()), point_x_buf.length());
             // point_y
-            sha256.Write((const uint8_t *)(str.c_str()), str.length());
+            sha256.Write((const uint8_t *)(point_y_buf.c_str()), point_y_buf.length());
             // N
-            sha256.Write((const uint8_t *)(str.c_str()), str.length());
+            sha256.Write((const uint8_t *)(N_buf.c_str()), N_buf.length());
             sha256.Finalize(sha256_digest);
             memcpy(blocks_buf.get() + CSHA256::OUTPUT_SIZE * j, sha256_digest, CSHA256::OUTPUT_SIZE);
         }
