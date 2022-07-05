@@ -193,9 +193,9 @@ TEST(ZKP, DLNProof)
     //BN Q = BN::FromHexStr(Q_hex);
     //BN N_tilde = BN::FromHexStr(N_tilde_hex);
 
-    int PRIME_BYTE_LEN = 1024 / 8;
-    BN P = RandomSafePrime(PRIME_BYTE_LEN);
-    BN Q = RandomSafePrime(PRIME_BYTE_LEN);
+    int PRIME_BITS = 1024 ;
+    BN P = RandomSafePrime(PRIME_BITS);
+    BN Q = RandomSafePrime(PRIME_BITS);
     BN N_tilde = P * Q;
 
     BN p = (P-1)/2;

@@ -140,7 +140,7 @@ void PailProof::Prove(const PailPrivKey &pail_priv, const BN &index, const BN &p
 }
 
 bool PailProof::Verify(const PailPubKey &pail_pub, const BN &index, const BN &point_x, const BN &point_y, uint32_t proof_iters) const {
-    if(pail_pub.n().BitLength() < 2047)return false;
+    if(pail_pub.n().BitLength() < 2046)return false;
 
     // Check the pail N
     std::vector<int> prime_arr;

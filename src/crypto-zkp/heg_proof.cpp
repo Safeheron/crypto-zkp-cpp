@@ -33,8 +33,8 @@ namespace zkp {
 namespace heg {
 
 void HegProof::Prove(const HomoElGamalStatement &delta, const HomoElGamalWitness &witness) {
-    BN s1 = RandomBN(32);
-    BN s2 = RandomBN(32);
+    BN s1 = RandomBN(256);
+    BN s2 = RandomBN(256);
     ProveWithR(delta, witness, s1, s2);
 }
 
