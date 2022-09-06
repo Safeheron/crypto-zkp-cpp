@@ -4,7 +4,6 @@
 #include "crypto-hash/sha256.h"
 #include "crypto-bn/rand.h"
 #include "crypto-paillier/pail.h"
-#include "zkp.pb.h"
 #include "crypto-encode/base64.h"
 #include "exception/located_exception.h"
 

@@ -4,7 +4,7 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
         crypto-zkp/heg_proof.cpp
         crypto-zkp/pail_proof.cpp
         crypto-zkp/range_proof.cpp
-        crypto-zkp/zkp.pb.cc
+        crypto-zkp/proto_gen/zkp.pb.switch.cc
         )
 
 # Refer to single internal library only if it's not assembled into a big library.

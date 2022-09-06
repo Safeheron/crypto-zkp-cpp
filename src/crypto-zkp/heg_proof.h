@@ -5,7 +5,7 @@
 #include <string>
 #include "crypto-bn/bn.h"
 #include "crypto-curve/curve.h"
-#include "zkp.pb.h"
+#include "proto_gen/zkp.pb.switch.h"
 
 namespace safeheron{
 namespace zkp{
