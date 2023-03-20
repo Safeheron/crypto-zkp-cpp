@@ -14,7 +14,7 @@ namespace pail {
 /**
  * @brief This protocol is based on the NIZK protocol in https://eprint.iacr.org/2018/057.pdf
  *
- * For parameters iteration = 11, alpha = 6370, see https://eprint.iacr.org/2018/987.pdf 6.2.3 for full details.
+ * For parameters iteration = 11, alpha = 6370, see section 3.2 https://eprint.iacr.org/2018/057.pdf for full details.
  */
 
 class PailProof {
@@ -23,8 +23,11 @@ private:
 public:
     // List of y^N mod N
     std::vector<safeheron::bignum::BN> y_N_arr_;
+    std::string salt_;
 
+public:
     PailProof(){};
+    void SetSalt(const std::string &salt) { salt_ = salt; }
 
     void Prove(const safeheron::pail::PailPrivKey &pail_priv, const safeheron::bignum::BN &index, const safeheron::bignum::BN &point_x, const safeheron::bignum::BN &point_y, uint32_t proof_iters = 11);
     bool Verify(const safeheron::pail::PailPubKey &pail_pub, const safeheron::bignum::BN &index, const safeheron::bignum::BN &point_x, const safeheron::bignum::BN &point_y, uint32_t proof_iters = 11) const;

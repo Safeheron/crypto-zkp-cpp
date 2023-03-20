@@ -55,6 +55,9 @@ void AliceRangeProof::Prove(const BN &q, const BN &N, const BN &g, const BN &N_t
     sha256.Write((const uint8_t *)(str.c_str()), str.length());
     w_.ToBytesBE(str);
     sha256.Write((const uint8_t *)(str.c_str()), str.length());
+    if(salt_.length() > 0) {
+        sha256.Write((const uint8_t *)(salt_.c_str()), salt_.length());
+    }
     sha256.Finalize(sha256_digest);
     BN e = BN::FromBytesBE(sha256_digest, sizeof(sha256_digest));
     e = e % q;
@@ -88,6 +91,9 @@ bool AliceRangeProof::Verify(const BN &q, const BN &N, const BN &g, const BN &N_
     sha256.Write((const uint8_t *)(str.c_str()), str.length());
     w_.ToBytesBE(str);
     sha256.Write((const uint8_t *)(str.c_str()), str.length());
+    if(salt_.length() > 0) {
+        sha256.Write((const uint8_t *)(salt_.c_str()), salt_.length());
+    }
     sha256.Finalize(sha256_digest);
     BN e = BN::FromBytesBE(sha256_digest, sizeof(sha256_digest));
     e = e % q;

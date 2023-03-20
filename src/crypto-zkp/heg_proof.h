@@ -1,4 +1,3 @@
-
 #ifndef SAFEHERON_CRYPTO_ZKP_HEG_PROOF_H
 #define SAFEHERON_CRYPTO_ZKP_HEG_PROOF_H
 
@@ -11,7 +10,9 @@ namespace safeheron{
 namespace zkp{
 namespace heg{
 
-/** @brief This is a proof of knowledge that a pair of group elements {D, E}
+/**
+ * @deprecated
+ * @brief This is a proof of knowledge that a pair of group elements {D, E}
  * form a valid homomorphic ElGamal encryption (”in the exponent”) using public key Y .
  * (HEG is defined in B. Schoenmakers and P. Tuyls. Practical Two-Party Computation Based on the Conditional Gate)
  * Specifically, the witness is ω = (x, r), the statement is δ = (G, H, Y, D, E).
@@ -50,6 +51,11 @@ public:
     curve::CurvePoint A3_;
     safeheron::bignum::BN z1_;
     safeheron::bignum::BN z2_;
+    std::string salt_;
+
+public:
+    void SetSalt(const std::string &salt) { salt_ = salt; }
+
     void Prove(const HomoElGamalStatement &delta, const HomoElGamalWitness &witness);
     void ProveWithR(const HomoElGamalStatement &delta, const HomoElGamalWitness &witness, const safeheron::bignum::BN &s1_lt_curveN, const safeheron::bignum::BN &s2_lt_curveN);
     bool Verify(const HomoElGamalStatement &delta)const;

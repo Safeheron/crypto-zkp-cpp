@@ -1,4 +1,3 @@
-
 #include "dlog_proof.h"
 #include <google/protobuf/util/json_util.h>
 #include "crypto-hash/sha256.h"
@@ -40,21 +39,24 @@ void DLogProof::InternalProveWithR(const BN &sk, const CurvePoint &g, const BN &
     CSHA256 sha256;
     uint8_t sha256_digest[CSHA256::OUTPUT_SIZE];
     string str;
-    g_r_.x().ToBytes32BE(str);
-    sha256.Write((const uint8_t *)(str.c_str()), str.length());
-    g_r_.y().ToBytes32BE(str);
-    sha256.Write((const uint8_t *)(str.c_str()), str.length());
     g.x().ToBytes32BE(str);
     sha256.Write((const uint8_t *)(str.c_str()), str.length());
     g.y().ToBytes32BE(str);
+    sha256.Write((const uint8_t *)(str.c_str()), str.length());
+    g_r_.x().ToBytes32BE(str);
+    sha256.Write((const uint8_t *)(str.c_str()), str.length());
+    g_r_.y().ToBytes32BE(str);
     sha256.Write((const uint8_t *)(str.c_str()), str.length());
     pk_.x().ToBytes32BE(str);
     sha256.Write((const uint8_t *)(str.c_str()), str.length());
     pk_.y().ToBytes32BE(str);
     sha256.Write((const uint8_t *)(str.c_str()), str.length());
+    if(salt_.length() > 0) {
+        sha256.Write((const uint8_t *)(salt_.c_str()), salt_.length());
+    }
     sha256.Finalize(sha256_digest);
     BN c = BN::FromBytesBE(sha256_digest, 32);
-    c = c % curv_->n;
+    c = c % order;
 
     // res = r - sk * c mod n
     BN skc = (sk * c) % order;
@@ -62,18 +64,20 @@ void DLogProof::InternalProveWithR(const BN &sk, const CurvePoint &g, const BN &
 }
 
 bool DLogProof::InternalVerify(const CurvePoint &g) const {
-    assert(curv_->g == g);
+    const curve::Curve *curv = curve::GetCurveParam(g.GetCurveType());
+    if(curv == nullptr) return false;
+
     // c = H(G || g^r || g^sk || UserID || OtherInfo)
     CSHA256 sha256;
     uint8_t sha256_digest[CSHA256::OUTPUT_SIZE];
     string str;
-    g_r_.x().ToBytes32BE(str);
-    sha256.Write((const uint8_t *)(str.c_str()), str.length());
-    g_r_.y().ToBytes32BE(str);
-    sha256.Write((const uint8_t *)(str.c_str()), str.length());
     g.x().ToBytes32BE(str);
     sha256.Write((const uint8_t *)(str.c_str()), str.length());
     g.y().ToBytes32BE(str);
+    sha256.Write((const uint8_t *)(str.c_str()), str.length());
+    g_r_.x().ToBytes32BE(str);
+    sha256.Write((const uint8_t *)(str.c_str()), str.length());
+    g_r_.y().ToBytes32BE(str);
     sha256.Write((const uint8_t *)(str.c_str()), str.length());
     pk_.x().ToBytes32BE(str);
     sha256.Write((const uint8_t *)(str.c_str()), str.length());
@@ -81,7 +85,7 @@ bool DLogProof::InternalVerify(const CurvePoint &g) const {
     sha256.Write((const uint8_t *)(str.c_str()), str.length());
     sha256.Finalize(sha256_digest);
     BN c = BN::FromBytesBE(sha256_digest, 32);
-    c = c % curv_->n;
+    c = c % curv->n;
 
     // Verify: g^r === g^[r - sk * c mod n] + pk * [c]
     CurvePoint expected_g_r = g * res_ + pk_ * c;
@@ -101,8 +105,22 @@ void DLogProof::ProveWithR(const BN &sk, const BN &r) {
 }
 
 bool DLogProof::Verify() const {
-    assert(curv_ != nullptr);
+    const curve::Curve *curv = curve::GetCurveParam(g_r_.GetCurveType());
+    if(curv != curv_) return false;
     return DLogProof::InternalVerify(curv_->g);
+}
+
+void DLogProof::ProveEx(const BN &sk, curve::CurveType curve_type) {
+    curv_ = curve::GetCurveParam(curve_type);
+    assert(curv_ != nullptr);
+    BN r = RandomBNLt(curv_->n);
+    ProveWithREx(sk, r, curve_type);
+}
+
+void DLogProof::ProveWithREx(const BN &sk, const BN &r, curve::CurveType curve_type) {
+    curv_ = curve::GetCurveParam(curve_type);
+    assert(curv != nullptr);
+    DLogProof::InternalProveWithR(sk, curv_->g, curv_->n, r);
 }
 
 bool DLogProof::ToProtoObject(safeheron::proto::DLogProof &dlog_proof) const {
@@ -133,19 +151,15 @@ bool DLogProof::FromProtoObject(const safeheron::proto::DLogProof &dlog_proof) {
     // g^r
     point = dlog_proof.g_r();
     ok = g_r_.FromProtoObject(point);
-    ok = ok && !g_r_.IsInfinity();
     if (!ok) return false;
 
     // public key
     point = dlog_proof.pk();
     ok = pk_.FromProtoObject(point);
-    ok = ok && !pk_.IsInfinity();
     if (!ok) return false;
 
     // res
     res_ = BN::FromHexStr(dlog_proof.res());
-    ok = (res_ != 0);
-    if (!ok) return false;
 
     // Curve
     curv_ = curve::GetCurveParam(pk_.GetCurveType());

@@ -1,4 +1,3 @@
-
 #include "pail_proof.h"
 #include <google/protobuf/util/json_util.h>
 #include "crypto-hash/sha256.h"
@@ -102,6 +101,9 @@ void PailProof::GenerateXs(std::vector<BN> &x_arr, const BN &index, const BN &po
             sha256.Write((const uint8_t *)(point_y_buf.c_str()), point_y_buf.length());
             // N
             sha256.Write((const uint8_t *)(N_buf.c_str()), N_buf.length());
+            if(salt_.length() > 0) {
+                sha256.Write((const uint8_t *)(salt_.c_str()), salt_.length());
+            }
             sha256.Finalize(sha256_digest);
             memcpy(blocks_buf.get() + CSHA256::OUTPUT_SIZE * j, sha256_digest, CSHA256::OUTPUT_SIZE);
         }
@@ -131,6 +133,8 @@ void PailProof::Prove(const PailPrivKey &pail_priv, const BN &index, const BN &p
 
 bool PailProof::Verify(const PailPubKey &pail_pub, const BN &index, const BN &point_x, const BN &point_y, uint32_t proof_iters) const {
     if(pail_pub.n().BitLength() < 2046)return false;
+    if(pail_pub.n() <= 1 || pail_pub.g() <= 1)return false;
+    if(pail_pub.n() + 1 != pail_pub.g())return false;
 
     // Check the pail N
     std::vector<int> prime_arr;
@@ -141,8 +145,9 @@ bool PailProof::Verify(const PailPubKey &pail_pub, const BN &index, const BN &po
 
     vector<BN> x_arr;
     GenerateXs(x_arr, index, point_x, point_y, pail_pub.n(), proof_iters);
-    if (x_arr.size() != proof_iters) return false;
+    if (y_N_arr_.size() < proof_iters) return false;
     for (uint32_t i = 0; i < proof_iters; ++i) {
+        if( y_N_arr_[i] <= 1 || y_N_arr_[i] >= pail_pub.n()) return false;
         BN x = y_N_arr_[i].PowM(pail_pub.n(), pail_pub.n());
         if (x != x_arr[i]) {
             return false;
@@ -166,6 +171,7 @@ bool PailProof::ToProtoObject(safeheron::proto::PailProof &pail_proof) const {
 bool PailProof::FromProtoObject(const safeheron::proto::PailProof &pail_proof) {
     safeheron::proto::CurvePoint point;
 
+    y_N_arr_.clear();
     for(int i = 0; i < pail_proof.y_n_arr_size(); ++i){
         BN y_N = BN::FromHexStr(pail_proof.y_n_arr(i));
         y_N_arr_.push_back(y_N);

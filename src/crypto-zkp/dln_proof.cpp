@@ -25,14 +25,14 @@ namespace dln_proof {
 const int ITERATIONS = 128;
 
 void DLNProof::Prove(const BN &N, const BN &h1, const BN &h2, const BN &p, const BN &q, const BN &x) {
-    BN PQ = p * q;
-    std::vector<BN> r_arr_;
+    BN pq = p * q;
+    std::vector<BN> r_arr;
 
     for(int i = 0; i < ITERATIONS; ++i){
-        BN r = RandomBNLtGcd(PQ);
-        // alpha = h1^alpha mod N
+        BN r = RandomBNLtGcd(pq);
+        // alpha = h1^r mod N
         BN alpha = h1.PowM(r, N);
-        r_arr_.push_back(r);
+        r_arr.push_back(r);
         alpha_arr_.push_back(alpha);
     }
 
@@ -50,18 +50,30 @@ void DLNProof::Prove(const BN &N, const BN &h1, const BN &h2, const BN &p, const
         alpha_arr_[i].ToBytesBE(str);
         sha256.Write((const uint8_t *)(str.c_str()), str.length());
     }
+    if(salt_.length() > 0) {
+        sha256.Write((const uint8_t *)(salt_.c_str()), salt_.length());
+    }
     sha256.Finalize(sha256_digest);
-    BN e = BN::FromBytesBE(sha256_digest, 32);
 
     for(int i = 0; i < ITERATIONS; ++i) {
         bool flag = ((sha256_digest[i/8] >> (i%8)) & 0x01) != 0;
-        BN t = ( r_arr_[i] + (flag ? x : BN::ZERO) ) % PQ;
+        BN t = ( r_arr[i] + (flag ? x : BN::ZERO) ) % pq;
         t_arr_.push_back(t);
     }
 }
 
 bool DLNProof::Verify(const BN &N, const BN &h1, const BN &h2) const {
     if( (alpha_arr_.size() < ITERATIONS) || (t_arr_.size() < ITERATIONS) ) return false;
+
+    if(N <= 1) return false;
+    if(h1 <= 1 || h1 >= N) return false;
+    if(h2 <= 1 || h2 >= N) return false;
+    if(h1 == h2) return false;
+    for(int i = 0; i < ITERATIONS; ++i) {
+        if(t_arr_[i] <= 1 || t_arr_[i] >= N) return false;
+        if(alpha_arr_[i] <= 1 || alpha_arr_[i] >= N) return false;
+    }
+    if(N.BitLength() < 2046)return false;
 
     // Hash( N || h1 || h2 || alpha_arr_)
     CSHA256 sha256;
@@ -77,8 +89,10 @@ bool DLNProof::Verify(const BN &N, const BN &h1, const BN &h2) const {
         alpha_arr_[i].ToBytesBE(str);
         sha256.Write((const uint8_t *)(str.c_str()), str.length());
     }
+    if(salt_.length() > 0) {
+        sha256.Write((const uint8_t *)(salt_.c_str()), salt_.length());
+    }
     sha256.Finalize(sha256_digest);
-    BN e = BN::FromBytesBE(sha256_digest, 32);
 
     for(int i = 0; i < ITERATIONS; ++i) {
         bool flag = ((sha256_digest[i/8] >> (i%8)) & 0x01) != 0;

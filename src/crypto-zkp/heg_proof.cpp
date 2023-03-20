@@ -36,6 +36,8 @@ HegProof::ProveWithR(const HomoElGamalStatement &delta, const HomoElGamalWitness
     curve::CurvePoint A3 = delta.G_ * s2;
     curve::CurvePoint T = A1 + A2;
 
+    const curve::Curve * curve = curve::GetCurveParam(delta.H_.GetCurveType());
+
     // e = H(T || A3 || G || H || Y || D || E)
     CSHA256 sha256;
     uint8_t sha256_digest[CSHA256::OUTPUT_SIZE];
@@ -54,18 +56,21 @@ HegProof::ProveWithR(const HomoElGamalStatement &delta, const HomoElGamalWitness
     sha256.Write((const uint8_t *)(str.c_str()), str.length());
     delta.E_.x().ToBytes32BE(str);
     sha256.Write((const uint8_t *)(str.c_str()), str.length());
+    if(salt_.length() > 0) {
+        sha256.Write((const uint8_t *)(salt_.c_str()), salt_.length());
+    }
     sha256.Finalize(sha256_digest);
 
     BN e = BN::FromBytesBE(sha256_digest, 32);
 
-    // z1 = s1 + x * e
+    // z1 = s1 + x * e mod q
     BN z1 = s1;
     if (witness.x_ != 0) {
-        z1 = s1 + witness.x_ * e;
+        z1 = (s1 + witness.x_ * e) % curve->n;
     }
 
-    // z1 = s2 + r * e
-    BN z2 = s2 + witness.r_ * e;
+    // z1 = s2 + r * e mod q
+    BN z2 = (s2 + witness.r_ * e) % curve->n;
 
     T_ = T;
     A3_ = A3;
@@ -76,8 +81,8 @@ HegProof::ProveWithR(const HomoElGamalStatement &delta, const HomoElGamalWitness
 bool HegProof::Verify(const HomoElGamalStatement &delta) const {
     // T = H^s1 + Y^s2
     // A3 = G^s2
-    // z1 = s1 + x * e
-    // z2 = s2 + r * e
+    // z1 = s1 + x * e mod q
+    // z2 = s2 + r * e mod q
 
     // e = H(T || A3 || G || H || Y || D || E)
     CSHA256 sha256;
@@ -97,6 +102,9 @@ bool HegProof::Verify(const HomoElGamalStatement &delta) const {
     sha256.Write((const uint8_t *)(str.c_str()), str.length());
     delta.E_.x().ToBytes32BE(str);
     sha256.Write((const uint8_t *)(str.c_str()), str.length());
+    if(salt_.length() > 0) {
+        sha256.Write((const uint8_t *)(salt_.c_str()), salt_.length());
+    }
     sha256.Finalize(sha256_digest);
     BN e = BN::FromBytesBE(sha256_digest, 32);
 
