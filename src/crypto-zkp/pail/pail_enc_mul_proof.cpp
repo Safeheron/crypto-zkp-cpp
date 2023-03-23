@@ -1,6 +1,6 @@
 #include "pail_enc_mul_proof.h"
 #include <google/protobuf/util/json_util.h>
-#include "crypto-hash/sha256.h"
+#include "crypto-hash/sha512.h"
 #include "crypto-bn/rand.h"
 #include "crypto-encode/base64.h"
 #include "exception/located_exception.h"
@@ -9,7 +9,7 @@ using std::string;
 using std::vector;
 using safeheron::bignum::BN;
 using safeheron::curve::CurvePoint;
-using safeheron::hash::CSHA256;
+using safeheron::hash::CSHA512;
 using google::protobuf::util::Status;
 using google::protobuf::util::MessageToJsonString;
 using google::protobuf::util::JsonStringToMessage;
@@ -45,27 +45,28 @@ void PailEncMulProof::Prove(const PailEncMulStatement &statement, const PailEncM
     // B = ( 1 + N )^alpha * s^N mod NSqr;
     B_ = ( ( N * alpha + 1 ) * s.PowM(N, NSqr) ) % NSqr;
 
-    CSHA256 sha256;
-    uint8_t sha256_digest[CSHA256::OUTPUT_SIZE];
+    CSHA512 sha512;
+    uint8_t sha512_digest[CSHA512::OUTPUT_SIZE];
     string str;
     N.ToBytesBE(str);
-    sha256.Write((const uint8_t *)(str.c_str()), str.length());
+    sha512.Write((const uint8_t *)(str.c_str()), str.length());
     X.ToBytesBE(str);
-    sha256.Write((const uint8_t *)(str.c_str()), str.length());
+    sha512.Write((const uint8_t *)(str.c_str()), str.length());
     Y.ToBytesBE(str);
-    sha256.Write((const uint8_t *)(str.c_str()), str.length());
+    sha512.Write((const uint8_t *)(str.c_str()), str.length());
     C.ToBytesBE(str);
-    sha256.Write((const uint8_t *)(str.c_str()), str.length());
+    sha512.Write((const uint8_t *)(str.c_str()), str.length());
     A_.ToBytesBE(str);
-    sha256.Write((const uint8_t *)(str.c_str()), str.length());
+    sha512.Write((const uint8_t *)(str.c_str()), str.length());
     B_.ToBytesBE(str);
-    sha256.Write((const uint8_t *)(str.c_str()), str.length());
+    sha512.Write((const uint8_t *)(str.c_str()), str.length());
     if(salt_.length() > 0) {
-        sha256.Write((const uint8_t *)(salt_.c_str()), salt_.length());
+        sha512.Write((const uint8_t *)(salt_.c_str()), salt_.length());
     }
-    sha256.Finalize(sha256_digest);
-    BN e = BN::FromBytesBE(sha256_digest, sizeof(sha256_digest));
+    sha512.Finalize(sha512_digest);
+    BN e = BN::FromBytesBE(sha512_digest, sizeof(sha512_digest) - 1);
     e = e % q;
+    if(sha512_digest[CSHA512::OUTPUT_SIZE - 1] & 0x01) e = e.Neg();
 
     // z = alpha + e * x
     z_ = e * x + alpha;
@@ -85,27 +86,28 @@ bool PailEncMulProof::Verify(const PailEncMulStatement &statement) const {
 
     if(N.BitLength() < 2047) return false;
 
-    CSHA256 sha256;
-    uint8_t sha256_digest[CSHA256::OUTPUT_SIZE];
+    CSHA512 sha512;
+    uint8_t sha512_digest[CSHA512::OUTPUT_SIZE];
     string str;
     N.ToBytesBE(str);
-    sha256.Write((const uint8_t *)(str.c_str()), str.length());
+    sha512.Write((const uint8_t *)(str.c_str()), str.length());
     X.ToBytesBE(str);
-    sha256.Write((const uint8_t *)(str.c_str()), str.length());
+    sha512.Write((const uint8_t *)(str.c_str()), str.length());
     Y.ToBytesBE(str);
-    sha256.Write((const uint8_t *)(str.c_str()), str.length());
+    sha512.Write((const uint8_t *)(str.c_str()), str.length());
     C.ToBytesBE(str);
-    sha256.Write((const uint8_t *)(str.c_str()), str.length());
+    sha512.Write((const uint8_t *)(str.c_str()), str.length());
     A_.ToBytesBE(str);
-    sha256.Write((const uint8_t *)(str.c_str()), str.length());
+    sha512.Write((const uint8_t *)(str.c_str()), str.length());
     B_.ToBytesBE(str);
-    sha256.Write((const uint8_t *)(str.c_str()), str.length());
+    sha512.Write((const uint8_t *)(str.c_str()), str.length());
     if(salt_.length() > 0) {
-        sha256.Write((const uint8_t *)(salt_.c_str()), salt_.length());
+        sha512.Write((const uint8_t *)(salt_.c_str()), salt_.length());
     }
-    sha256.Finalize(sha256_digest);
-    BN e = BN::FromBytesBE(sha256_digest, sizeof(sha256_digest));
+    sha512.Finalize(sha512_digest);
+    BN e = BN::FromBytesBE(sha512_digest, sizeof(sha512_digest) - 1);
     e = e % q;
+    if(sha512_digest[CSHA512::OUTPUT_SIZE - 1] & 0x01) e = e.Neg();
 
     bool ok = true;
     BN left_num;

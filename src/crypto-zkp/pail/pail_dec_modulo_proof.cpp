@@ -1,6 +1,6 @@
 #include "pail_dec_modulo_proof.h"
 #include <google/protobuf/util/json_util.h>
-#include "crypto-hash/sha256.h"
+#include "crypto-hash/sha512.h"
 #include "crypto-bn/rand.h"
 #include "crypto-encode/base64.h"
 #include "exception/located_exception.h"
@@ -9,7 +9,7 @@ using std::string;
 using std::vector;
 using safeheron::bignum::BN;
 using safeheron::curve::CurvePoint;
-using safeheron::hash::CSHA256;
+using safeheron::hash::CSHA512;
 using google::protobuf::util::Status;
 using google::protobuf::util::MessageToJsonString;
 using google::protobuf::util::JsonStringToMessage;
@@ -61,31 +61,32 @@ void PailDecModuloProof::Prove(const PailDecModuloSetUp &setup, const PailDecMod
     // gamma = alpha  mod q
     gamma_ = alpha % q;
 
-    CSHA256 sha256;
-    uint8_t sha256_digest[CSHA256::OUTPUT_SIZE];
+    CSHA512 sha512;
+    uint8_t sha512_digest[CSHA512::OUTPUT_SIZE];
     string str;
     N0.ToBytesBE(str);
-    sha256.Write((const uint8_t *)(str.c_str()), str.length());
+    sha512.Write((const uint8_t *)(str.c_str()), str.length());
     q.ToBytesBE(str);
-    sha256.Write((const uint8_t *)(str.c_str()), str.length());
+    sha512.Write((const uint8_t *)(str.c_str()), str.length());
     C.ToBytesBE(str);
-    sha256.Write((const uint8_t *)(str.c_str()), str.length());
+    sha512.Write((const uint8_t *)(str.c_str()), str.length());
     x.ToBytesBE(str);
-    sha256.Write((const uint8_t *)(str.c_str()), str.length());
+    sha512.Write((const uint8_t *)(str.c_str()), str.length());
     S_.ToBytesBE(str);
-    sha256.Write((const uint8_t *)(str.c_str()), str.length());
+    sha512.Write((const uint8_t *)(str.c_str()), str.length());
     T_.ToBytesBE(str);
-    sha256.Write((const uint8_t *)(str.c_str()), str.length());
+    sha512.Write((const uint8_t *)(str.c_str()), str.length());
     A_.ToBytesBE(str);
-    sha256.Write((const uint8_t *)(str.c_str()), str.length());
+    sha512.Write((const uint8_t *)(str.c_str()), str.length());
     gamma_.ToBytesBE(str);
-    sha256.Write((const uint8_t *)(str.c_str()), str.length());
+    sha512.Write((const uint8_t *)(str.c_str()), str.length());
     if(salt_.length() > 0) {
-        sha256.Write((const uint8_t *)(salt_.c_str()), salt_.length());
+        sha512.Write((const uint8_t *)(salt_.c_str()), salt_.length());
     }
-    sha256.Finalize(sha256_digest);
-    BN e = BN::FromBytesBE(sha256_digest, sizeof(sha256_digest));
+    sha512.Finalize(sha512_digest);
+    BN e = BN::FromBytesBE(sha512_digest, sizeof(sha512_digest) - 1);
     e = e % q;
+    if(sha512_digest[CSHA512::OUTPUT_SIZE - 1] & 0x01) e = e.Neg();
 
     // z1 = alpha + e * y
     z1_ = alpha + e * y;
@@ -110,31 +111,32 @@ bool PailDecModuloProof::Verify(const PailDecModuloSetUp &setup, const PailDecMo
 
     if(N_tilde.BitLength() < 2047) return false;
 
-    CSHA256 sha256;
-    uint8_t sha256_digest[CSHA256::OUTPUT_SIZE];
+    CSHA512 sha512;
+    uint8_t sha512_digest[CSHA512::OUTPUT_SIZE];
     string str;
     N0.ToBytesBE(str);
-    sha256.Write((const uint8_t *)(str.c_str()), str.length());
+    sha512.Write((const uint8_t *)(str.c_str()), str.length());
     q.ToBytesBE(str);
-    sha256.Write((const uint8_t *)(str.c_str()), str.length());
+    sha512.Write((const uint8_t *)(str.c_str()), str.length());
     C.ToBytesBE(str);
-    sha256.Write((const uint8_t *)(str.c_str()), str.length());
+    sha512.Write((const uint8_t *)(str.c_str()), str.length());
     x.ToBytesBE(str);
-    sha256.Write((const uint8_t *)(str.c_str()), str.length());
+    sha512.Write((const uint8_t *)(str.c_str()), str.length());
     S_.ToBytesBE(str);
-    sha256.Write((const uint8_t *)(str.c_str()), str.length());
+    sha512.Write((const uint8_t *)(str.c_str()), str.length());
     T_.ToBytesBE(str);
-    sha256.Write((const uint8_t *)(str.c_str()), str.length());
+    sha512.Write((const uint8_t *)(str.c_str()), str.length());
     A_.ToBytesBE(str);
-    sha256.Write((const uint8_t *)(str.c_str()), str.length());
+    sha512.Write((const uint8_t *)(str.c_str()), str.length());
     gamma_.ToBytesBE(str);
-    sha256.Write((const uint8_t *)(str.c_str()), str.length());
+    sha512.Write((const uint8_t *)(str.c_str()), str.length());
     if(salt_.length() > 0) {
-        sha256.Write((const uint8_t *)(salt_.c_str()), salt_.length());
+        sha512.Write((const uint8_t *)(salt_.c_str()), salt_.length());
     }
-    sha256.Finalize(sha256_digest);
-    BN e = BN::FromBytesBE(sha256_digest, sizeof(sha256_digest));
+    sha512.Finalize(sha512_digest);
+    BN e = BN::FromBytesBE(sha512_digest, sizeof(sha512_digest) - 1);
     e = e % q;
+    if(sha512_digest[CSHA512::OUTPUT_SIZE - 1] & 0x01) e = e.Neg();
 
     bool ok = true;
     BN left_num;
