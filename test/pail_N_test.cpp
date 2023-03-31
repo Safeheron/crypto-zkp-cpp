@@ -8,6 +8,7 @@
 #include "crypto-paillier/pail.h"
 #include "crypto-encode/base64.h"
 #include "exception/located_exception.h"
+#include "CTimer.h"
 
 using std::string;
 using std::vector;
@@ -40,9 +41,13 @@ TEST(ZKP, PailNProof)
     CurvePoint point = curv->g * r;
     BN index = RandomBNLtGcd(curv->n);
 
+    CTimer timer("prove" );
     PailNProof proof;
     proof.Prove(pail_priv);
+    timer.End();
+    timer.Reset("verify" );
     ASSERT_TRUE(proof.Verify(pail_pub));
+    timer.End();
 
     //// json string
     PailNProof proof2;

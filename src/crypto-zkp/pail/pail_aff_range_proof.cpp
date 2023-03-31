@@ -110,9 +110,6 @@ bool PailAffRangeProof::Verify(const PailAffRangeSetUp &setup, const PailAffRang
     BN q2 = q * q;
     BN q3 = q * q2;
     BN q7 = q * q3 * q3;
-    BN q_N_tilde = q * N_tilde;
-    BN q2_N_tilde = q * q_N_tilde;
-    BN q3_N_tilde = q * q2_N_tilde;
 
     if(N_tilde.BitLength() < 2047) return false;
     if(pail_pub.n().BitLength() < 2047) return false;

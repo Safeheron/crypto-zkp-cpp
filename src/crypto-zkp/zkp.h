@@ -26,6 +26,7 @@
 #include "pail/pail_dec_modulo_proof.h"
 #include "pail/pail_enc_elgamal_com_range_proof.h"
 #include "pail/pail_enc_group_ele_range_proof.h"
+#include "pail/pail_enc_group_ele_range_proof_cmpt.h"
 #include "pail/pail_enc_mul_proof.h"
 #include "pail/pail_enc_range_proof_v1.h"
 #include "pail/pail_enc_range_proof_v2.h"

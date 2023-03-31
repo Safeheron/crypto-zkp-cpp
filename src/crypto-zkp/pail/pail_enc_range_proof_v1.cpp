@@ -92,8 +92,6 @@ bool PailEncRangeProof_V1::Verify(const PailEncRangeSetUp_V1 &setup, const PailE
 
     BN q2 = q * q;
     BN q3 = q * q2;
-    BN q_N_tilde = q * N_tilde;
-    BN q3_N_tilde = q2 * q_N_tilde;
 
     if(N_tilde.BitLength() < 2047) return false;
     if(N.BitLength() < 2047) return false;

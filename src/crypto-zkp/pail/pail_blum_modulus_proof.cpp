@@ -5,6 +5,8 @@
 #include "crypto-encode/base64.h"
 #include "exception/located_exception.h"
 
+#define PRIME_UTIL 6370
+
 using std::string;
 using std::vector;
 using safeheron::bignum::BN;
@@ -22,7 +24,27 @@ namespace safeheron{
 namespace zkp {
 namespace pail {
 
-const int ITERATIONS = 128;
+const int ITERATIONS_BlumInt_Proof = 128;
+const int ITERATIONS_PailN_Proof = 11;
+
+static void prime_util(int n, std::vector<int> &prime_arr){
+    assert(n > 0);
+    prime_arr.clear();
+    if(n < 2) return;
+    for(int i = 3; i <= n; i++){
+        bool is_prime = true;
+        for(int p: prime_arr){
+            if(p * p >= i) {
+                break;
+            }
+            if(i % p == 0) {
+                is_prime = false;
+                break;
+            }
+        }
+        if(is_prime)prime_arr.push_back(i);
+    }
+}
 
 static void uint_to_byte4(uint8_t buf[4], unsigned int ui){
     // Big endian
@@ -51,7 +73,7 @@ void PailBlumModulusProof::GenerateYs(std::vector<safeheron::bignum::BN> &x_arr,
     // w
     w.ToBytesBE(w_buf);
 
-    for( i = 0; i < ITERATIONS; ++i ){
+    for( i = 0; i < ITERATIONS_BlumInt_Proof; ++i ){
         for( j = 0; j < N_blocks; ++j ){
             // digest = H(i || j || n || index || point_x || point_y || N)
             CSHA256 sha256;
@@ -157,13 +179,12 @@ bool PailBlumModulusProof::Prove(const safeheron::bignum::BN &N, const safeheron
     }
 
     std::vector<BN> y_arr;
-    GenerateYs(y_arr, N, w_, ITERATIONS);
+    GenerateYs(y_arr, N, w_, ITERATIONS_BlumInt_Proof);
 
-    for(int i = 0; i < ITERATIONS; ++i){
+    for(int i = 0; i < ITERATIONS_BlumInt_Proof; ++i){
         BN root;
         int32_t a, b;
         bool ok = GetQuarticSqrt(N, p, q, p.InvM(q), q.InvM(p), w_, y_arr[i], root, a, b);
-        BN expect_y_prime = (root.PowM(BN(4), N) *  (a ? BN::MINUS_ONE : BN::ONE) * (b ? w_ : BN::ONE) ) % N;
         if(!ok) return false;
         x_arr_.push_back(root);
         a_arr_.push_back(a);
@@ -172,7 +193,7 @@ bool PailBlumModulusProof::Prove(const safeheron::bignum::BN &N, const safeheron
 
     BN lambda = (p - 1) * (q - 1);
     BN N_inv = N.InvM(lambda);
-    for(uint32_t i = 0; i < ITERATIONS; ++i){
+    for(uint32_t i = 0; i < ITERATIONS_PailN_Proof; ++i){
         BN z = y_arr[i].PowM(N_inv, N);
         z_arr_.push_back(z);
     }
@@ -180,18 +201,25 @@ bool PailBlumModulusProof::Prove(const safeheron::bignum::BN &N, const safeheron
 }
 
 bool PailBlumModulusProof::Verify(const BN &N) const {
-    if( (x_arr_.size() < ITERATIONS) || (a_arr_.size() < ITERATIONS)  || (b_arr_.size() < ITERATIONS)  || (z_arr_.size() < ITERATIONS) ) return false;
+    if( (x_arr_.size() < ITERATIONS_BlumInt_Proof) || (a_arr_.size() < ITERATIONS_BlumInt_Proof)  || (b_arr_.size() < ITERATIONS_BlumInt_Proof)  || (z_arr_.size() < ITERATIONS_PailN_Proof) ) return false;
 
     std::vector<BN> y_arr;
-    GenerateYs(y_arr, N, w_, ITERATIONS);
+    GenerateYs(y_arr, N, w_, ITERATIONS_BlumInt_Proof);
 
-    for(int i = 0; i < ITERATIONS; ++i){
+    for(int i = 0; i < ITERATIONS_BlumInt_Proof; ++i){
         BN expect_y_prime = x_arr_[i].PowM(BN(4), N);
         BN y_prime = (y_arr[i] * (a_arr_[i] ? BN::MINUS_ONE : BN::ONE) * (b_arr_[i] ? w_ : BN::ONE)) % N;
         if(expect_y_prime != y_prime) return false;
     }
 
-    for (uint32_t i = 0; i < ITERATIONS; ++i) {
+    // Check the pail N
+    std::vector<int> prime_arr;
+    prime_util(PRIME_UTIL, prime_arr);
+    for(int p: prime_arr){
+        if(N % p == 0) return false;
+    }
+
+    for (uint32_t i = 0; i < ITERATIONS_PailN_Proof; ++i) {
         BN z = z_arr_[i].PowM(N, N);
         if (z != y_arr[i]) return false;
     }

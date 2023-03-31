@@ -8,6 +8,7 @@
 #include "crypto-paillier/pail.h"
 #include "crypto-encode/base64.h"
 #include "exception/located_exception.h"
+#include "CTimer.h"
 
 using std::string;
 using std::vector;
@@ -39,12 +40,16 @@ TEST(ZKP, NoSmallFactorProof)
     BN Q = RandomSafePrimeStrict(1024);
     BN N = P * Q;
 
+    CTimer timer("prove" );
     NoSmallFactorSetUp set_up(N_tilde, h1, h2);
     NoSmallFactorStatement statement(N, 256, 512);
     NoSmallFactorWitness witness(P, Q);
     NoSmallFactorProof proof;
     proof.Prove(set_up, statement, witness);
+    timer.End();
+    timer.Reset("verify" );
     ASSERT_TRUE(proof.Verify(set_up, statement));
+    timer.End();
 
     //// json string
     NoSmallFactorProof proof2;

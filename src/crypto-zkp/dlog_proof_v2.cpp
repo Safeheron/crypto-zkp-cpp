@@ -1,4 +1,5 @@
 #include "dlog_proof_v2.h"
+#include <cassert>
 #include <google/protobuf/util/json_util.h>
 #include "crypto-hash/sha256.h"
 #include "crypto-bn/rand.h"
@@ -115,7 +116,7 @@ bool DLogProof_V2::Verify(const curve::CurvePoint &X) const {
 
 void DLogProof_V2::ProveEx(const BN &sk, curve::CurveType curve_type) {
     curv_ = curve::GetCurveParam(curve_type);
-    assert(curv != nullptr);
+    assert(curv_ != nullptr);
     BN alpha = RandomBNLt(curv_->n);
     ProveWithREx(sk, alpha, curve_type);
 }

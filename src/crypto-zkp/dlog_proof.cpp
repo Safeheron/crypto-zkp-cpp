@@ -119,7 +119,7 @@ void DLogProof::ProveEx(const BN &sk, curve::CurveType curve_type) {
 
 void DLogProof::ProveWithREx(const BN &sk, const BN &r, curve::CurveType curve_type) {
     curv_ = curve::GetCurveParam(curve_type);
-    assert(curv != nullptr);
+    assert(curv_ != nullptr);
     DLogProof::InternalProveWithR(sk, curv_->g, curv_->n, r);
 }
 

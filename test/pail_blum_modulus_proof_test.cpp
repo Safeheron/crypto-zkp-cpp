@@ -59,7 +59,7 @@ TEST(ZKP, PailBlumModulusProof)
     safeheron::zkp::pail::PailBlumModulusProof proof;
     ASSERT_TRUE(proof.Prove(N_tilde, P, Q));
     timer.End();
-    timer.Reset("proof");
+    timer.Reset("verify");
     ASSERT_TRUE(proof.Verify(N_tilde));
     timer.End();
 }
