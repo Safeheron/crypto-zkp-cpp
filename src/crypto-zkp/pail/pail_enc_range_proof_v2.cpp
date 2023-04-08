@@ -102,6 +102,11 @@ bool PailEncRangeProof_V2::Verify(const PailEncRangeSetUp_V2 &setup, const PailE
 
     if(N_tilde.BitLength() < 2047) return false;
 
+    if( S_ % N_tilde == 0 ) return false;
+    if( A_.Gcd(N0) != BN::ONE ) return false;
+    if( C_ % N_tilde == 0 ) return false;
+    if( z2_.Gcd(N0) != BN::ONE ) return false;
+
     if(z1_ > limit_alpha || z1_ < BN::ZERO - limit_alpha) return false;
 
     CSHA512 sha512;

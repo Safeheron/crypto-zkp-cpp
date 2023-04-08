@@ -110,6 +110,11 @@ bool PailEncGroupEleRangeProof::Verify(const PailEncGroupEleRangeSetUp &setup, c
 
     if(z1_ > limit_alpha || z1_ < BN::ZERO - limit_alpha) return false;
 
+    if(S_ % N_tilde == BN::ZERO) return false;
+    if(A_.Gcd(N0) != BN::ONE) return false;
+    if(D_ % N_tilde == BN::ZERO) return false;
+    if(z2_.Gcd(N0) != BN::ONE) return false;
+
     CSHA512 sha512;
     uint8_t sha512_digest[CSHA512::OUTPUT_SIZE];
     string str;

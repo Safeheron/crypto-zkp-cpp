@@ -111,6 +111,11 @@ bool PailMulGroupEleRangeProof::Verify(const PailMulGroupEleRangeSetUp &setup, c
     if(N_tilde.BitLength() < 2047) return false;
     if(N0.BitLength() < 2047) return false;
 
+    if(A_.Gcd(N0) != BN::ONE) return false;
+    if(E_ % N_tilde == BN::ZERO) return false;
+    if(S_ % N_tilde == BN::ZERO) return false;
+    if(w_.Gcd(N0) != BN::ONE) return false;
+
     const BN limit_alpha = BN::ONE << (l + varepsilon);
 
     if(z1_ > limit_alpha || z1_ < (BN::ZERO - limit_alpha) ) return false;

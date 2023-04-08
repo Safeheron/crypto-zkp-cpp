@@ -96,6 +96,11 @@ bool PailEncRangeProof_V1::Verify(const PailEncRangeSetUp_V1 &setup, const PailE
     if(N_tilde.BitLength() < 2047) return false;
     if(N.BitLength() < 2047) return false;
 
+    if(z_.Gcd(N_tilde) != BN::ONE) return false;
+    if(u_.Gcd(N) != BN::ONE) return false;
+    if(w_.Gcd(N_tilde) != BN::ONE) return false;
+    if(s_.Gcd(N) != BN::ONE) return false;
+
     if(s1_ < (BN::ZERO - q3) || s1_ > q3)return false;
 
     CSHA256 sha256;

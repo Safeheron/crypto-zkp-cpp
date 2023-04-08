@@ -110,6 +110,10 @@ bool PailDecModuloProof::Verify(const PailDecModuloSetUp &setup, const PailDecMo
     const uint32_t varepsilon = statement.varepsilon_;
 
     if(N_tilde.BitLength() < 2047) return false;
+    if(S_ % N_tilde == 0) return false;
+    if(T_ % N_tilde == 0) return false;
+    if(A_.Gcd(N0) != BN::ONE) return false;
+    if(w_.Gcd(N0) != BN::ONE) return false;
 
     CSHA512 sha512;
     uint8_t sha512_digest[CSHA512::OUTPUT_SIZE];

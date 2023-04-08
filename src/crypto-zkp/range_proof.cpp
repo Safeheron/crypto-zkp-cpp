@@ -76,6 +76,11 @@ bool AliceRangeProof::Verify(const BN &q, const BN &N, const BN &g, const BN &N_
 
     if(N_tilde.BitLength() < 2047) return false;
 
+    if(z_ % N_tilde == 0) return false;
+    if(u_.Gcd(N) != BN::ONE) return false;
+    if(w_ % N_tilde == 0) return false;
+    if(s_.Gcd(N) != BN::ONE) return false;
+
     if(s1_ > q3)return false;
 
     CSHA256 sha256;

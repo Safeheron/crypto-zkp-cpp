@@ -131,6 +131,11 @@ bool PailEncElGamalComRangeProof::Verify(const PailEncElGamalComRangeSetUp &setu
     if(N0.BitLength() < 2047) return false;
     if(N0Sqr.BitLength() < 4094) return false;
 
+    if(S_ % N_tilde == 0) return false;
+    if(D_.Gcd(N0) != BN::ONE) return false;
+    if(T_ % N_tilde == 0) return false;
+    if(z2_.Gcd(N0) != BN::ONE) return false;
+
     // 2^(l + varepsilon)
     const BN limit_alpha = BN::ONE << (l + varepsilon);
 

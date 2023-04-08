@@ -86,6 +86,9 @@ bool PailEncMulProof::Verify(const PailEncMulStatement &statement) const {
 
     if(N.BitLength() < 2047) return false;
 
+    if(A_.Gcd(N) != BN::ONE) return false;
+    if(B_.Gcd(N) != BN::ONE) return false;
+
     CSHA512 sha512;
     uint8_t sha512_digest[CSHA512::OUTPUT_SIZE];
     string str;

@@ -125,6 +125,13 @@ bool PailAffGroupEleRangeProof_V1::Verify(const PailAffGroupEleRangeSetUp_V1 &se
 
     if(N_tilde.BitLength() < 2047) return false;
 
+    if(z_.Gcd(N_tilde) != BN::ONE)return false;
+    if(z_prime_.Gcd(N_tilde) != BN::ONE)return false;
+    if(t_.Gcd(N_tilde) != BN::ONE)return false;
+    if(v_.Gcd(pail_pub.n()) != BN::ONE)return false;
+    if(w_.Gcd(N_tilde) != BN::ONE)return false;
+    if(s_.Gcd(pail_pub.n()) != BN::ONE)return false;
+
     if(s1_ > q3 || s1_ < BN::ZERO - q3)return false;
     if(t1_ > q7 || t1_ < BN::ZERO - q7)return false;
 

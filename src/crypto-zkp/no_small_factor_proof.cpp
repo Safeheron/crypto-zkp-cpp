@@ -110,6 +110,12 @@ bool NoSmallFactorProof::Verify(const NoSmallFactorSetUp &setup, const NoSmallFa
     if(z1_ > limit_alpha_beta || z1_ < BN::ZERO - limit_alpha_beta)return false;
     if(z2_ > limit_alpha_beta || z2_ < BN::ZERO - limit_alpha_beta)return false;
 
+    if(P_ % N_tilde == 0) return false;
+    if(Q_ % N_tilde == 0) return false;
+    if(A_ % N_tilde == 0) return false;
+    if(B_ % N_tilde == 0) return false;
+    if(T_ % N_tilde == 0) return false;
+
     CSHA512 sha512;
     uint8_t sha512_digest[CSHA512::OUTPUT_SIZE];
     string str;
