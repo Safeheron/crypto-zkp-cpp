@@ -90,7 +90,6 @@ void PailBlumModulusProof::GenerateYs(std::vector<safeheron::bignum::BN> &x_arr,
             sha256.Write( byte4, 4);
             // N
             sha256.Write((const uint8_t *)(N_buf.c_str()), N_buf.length());
-            sha256.Finalize(sha256_digest);
             // w
             sha256.Write((const uint8_t *)(w_buf.c_str()), w_buf.length());
             if(salt_.length() > 0) {
