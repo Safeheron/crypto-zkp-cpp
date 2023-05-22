@@ -133,6 +133,7 @@ bool PailNProof::Verify(const PailPubKey &pail_pub, uint32_t proof_iters) const 
     if (y_N_arr_.size() < proof_iters) return false;
     for (uint32_t i = 0; i < proof_iters; ++i) {
         if( y_N_arr_[i] <= 1 || y_N_arr_[i] >= pail_pub.n()) return false;
+        if( y_N_arr_[i].Gcd(pail_pub.n()) != 1) return false;
         BN x = y_N_arr_[i].PowM(pail_pub.n(), pail_pub.n());
         if (x != x_arr[i]) {
             return false;

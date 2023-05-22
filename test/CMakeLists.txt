@@ -52,6 +52,9 @@ add_test(NAME zkp.no_small_factor_proof_test COMMAND no_small_factor_proof_test)
 add_executable(pail_N_test pail_N_test.cpp CTimer.cpp)
 add_test(NAME zkp.pail_N_test COMMAND pail_N_test)
 
+add_executable(pail_test pail_test.cpp CTimer.cpp)
+add_test(NAME zkp.pail_test COMMAND pail_test)
+
 add_executable(pedersen_proof_test pedersen_proof_test.cpp CTimer.cpp)
 add_test(NAME zkp.pedersen_proof_test COMMAND pedersen_proof_test)
 

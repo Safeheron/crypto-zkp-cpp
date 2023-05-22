@@ -202,6 +202,10 @@ bool PailBlumModulusProof::Prove(const safeheron::bignum::BN &N, const safeheron
 bool PailBlumModulusProof::Verify(const BN &N) const {
     if( (x_arr_.size() < ITERATIONS_BlumInt_Proof) || (a_arr_.size() < ITERATIONS_BlumInt_Proof)  || (b_arr_.size() < ITERATIONS_BlumInt_Proof)  || (z_arr_.size() < ITERATIONS_PailN_Proof) ) return false;
 
+    if(N <= 1 || N.BitLength() < 2046) return false;
+    if(w_ <= 0 || w_ >= N) return false;
+    if(BN::JacobiSymbol(w_, N) != -1) return false;
+
     std::vector<BN> y_arr;
     GenerateYs(y_arr, N, w_, ITERATIONS_BlumInt_Proof);
 
@@ -219,6 +223,8 @@ bool PailBlumModulusProof::Verify(const BN &N) const {
     }
 
     for (uint32_t i = 0; i < ITERATIONS_PailN_Proof; ++i) {
+        if(z_arr_[i] <= 1 || z_arr_[i] >= N) return false;
+        if(z_arr_[i].Gcd(N) != 1) return false;
         BN z = z_arr_[i].PowM(N, N);
         if (z != y_arr[i]) return false;
     }
