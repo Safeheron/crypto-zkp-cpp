@@ -14,10 +14,12 @@ namespace no_small_factor_proof{
  *
  * SetUp: s = (N_tilde, s, t), which is Strong RSA Assumption.
  * Statement: δ = (N0, l, \varepsilon), where:
+ *      - l is suggested to be 256
+ *      - \varepsilon is suggested to be 512
  * Witness:   ω = (p, q)
  * Prove relation:
  *      - N0 = pq
- *      - p, q in ( -2^l * sqrt(N0), 2^l * sqrt(N0) )
+ *      - p, q > 2^l
  */
 
 struct NoSmallFactorSetUp{

@@ -85,7 +85,8 @@ void NoSmallFactorProof::Prove(const NoSmallFactorSetUp &setup, const NoSmallFac
         sha512.Write((const uint8_t *)(salt_.c_str()), salt_.length());
     }
     sha512.Finalize(sha512_digest);
-    BN e = BN::FromBytesBE(sha512_digest, CSHA512::OUTPUT_SIZE - 1);
+    int byte_len = l / 8;
+    BN e = BN::FromBytesBE(sha512_digest, byte_len);
     if(sha512_digest[CSHA512::OUTPUT_SIZE - 1] & 0x01) e = e.Neg();
 
     BN sigma_tilde = sigma_ - nu * p;
@@ -110,11 +111,19 @@ bool NoSmallFactorProof::Verify(const NoSmallFactorSetUp &setup, const NoSmallFa
     if(z1_ > limit_alpha_beta || z1_ < BN::ZERO - limit_alpha_beta)return false;
     if(z2_ > limit_alpha_beta || z2_ < BN::ZERO - limit_alpha_beta)return false;
 
+    if(N_tilde.BitLength() < 2046)return false;
+
     if(P_ % N_tilde == 0) return false;
     if(Q_ % N_tilde == 0) return false;
     if(A_ % N_tilde == 0) return false;
     if(B_ % N_tilde == 0) return false;
     if(T_ % N_tilde == 0) return false;
+
+    if(P_.Gcd(N_tilde) != 1) return false;
+    if(Q_.Gcd(N_tilde) != 1) return false;
+    if(A_.Gcd(N_tilde) != 1) return false;
+    if(B_.Gcd(N_tilde) != 1) return false;
+    if(T_.Gcd(N_tilde) != 1) return false;
 
     CSHA512 sha512;
     uint8_t sha512_digest[CSHA512::OUTPUT_SIZE];
@@ -135,7 +144,8 @@ bool NoSmallFactorProof::Verify(const NoSmallFactorSetUp &setup, const NoSmallFa
         sha512.Write((const uint8_t *)(salt_.c_str()), salt_.length());
     }
     sha512.Finalize(sha512_digest);
-    BN e = BN::FromBytesBE(sha512_digest, CSHA512::OUTPUT_SIZE - 1);
+    int byte_len = l / 8;
+    BN e = BN::FromBytesBE(sha512_digest, byte_len);
     if(sha512_digest[CSHA512::OUTPUT_SIZE - 1] & 0x01) e = e.Neg();
 
     BN R = (s.PowM(N0, N_tilde) * t.PowM(sigma_, N_tilde)) % N_tilde;
