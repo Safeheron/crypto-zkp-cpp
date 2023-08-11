@@ -81,6 +81,8 @@ void NoSmallFactorProof::Prove(const NoSmallFactorSetUp &setup, const NoSmallFac
     sha512.Write((const uint8_t *)(str.c_str()), str.length());
     T_.ToBytesBE(str);
     sha512.Write((const uint8_t *)(str.c_str()), str.length());
+    sigma_.ToBytesBE(str);
+    sha512.Write((const uint8_t *)(str.c_str()), str.length());
     if(salt_.length() > 0) {
         sha512.Write((const uint8_t *)(salt_.c_str()), salt_.length());
     }
@@ -139,6 +141,8 @@ bool NoSmallFactorProof::Verify(const NoSmallFactorSetUp &setup, const NoSmallFa
     B_.ToBytesBE(str);
     sha512.Write((const uint8_t *)(str.c_str()), str.length());
     T_.ToBytesBE(str);
+    sha512.Write((const uint8_t *)(str.c_str()), str.length());
+    sigma_.ToBytesBE(str);
     sha512.Write((const uint8_t *)(str.c_str()), str.length());
     if(salt_.length() > 0) {
         sha512.Write((const uint8_t *)(salt_.c_str()), salt_.length());
