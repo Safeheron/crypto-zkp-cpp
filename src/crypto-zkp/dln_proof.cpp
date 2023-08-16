@@ -24,6 +24,15 @@ namespace dln_proof {
 
 const int ITERATIONS = 128;
 
+static void uint_to_byte4(uint8_t buf[4], unsigned int ui){
+    // Big endian
+    buf[3] = ui & 0x000000ff;
+    buf[2] = (ui & 0x0000ff00) >> 8;
+    buf[1] = (ui & 0x00ff0000) >> 16;
+    buf[0] = (ui & 0xff000000) >> 24;
+
+}
+
 void DLNProof::Prove(const BN &N, const BN &h1, const BN &h2, const BN &p, const BN &q, const BN &x) {
     BN pq = p * q;
     std::vector<BN> r_arr;
@@ -40,6 +49,7 @@ void DLNProof::Prove(const BN &N, const BN &h1, const BN &h2, const BN &p, const
     CSHA256 sha256;
     uint8_t sha256_digest[CSHA256::OUTPUT_SIZE];
     string str;
+    uint8_t byte4[4];
     N.ToBytesBE(str);
     sha256.Write((const uint8_t *)(str.c_str()), str.length());
     h1.ToBytesBE(str);
@@ -49,6 +59,8 @@ void DLNProof::Prove(const BN &N, const BN &h1, const BN &h2, const BN &p, const
     for(int i = 0; i < ITERATIONS; ++i) {
         alpha_arr_[i].ToBytesBE(str);
         sha256.Write((const uint8_t *)(str.c_str()), str.length());
+        uint_to_byte4(byte4, str.length());
+        sha256.Write( byte4, 4);
     }
     if(salt_.length() > 0) {
         sha256.Write((const uint8_t *)(salt_.c_str()), salt_.length());
@@ -79,6 +91,7 @@ bool DLNProof::Verify(const BN &N, const BN &h1, const BN &h2) const {
     CSHA256 sha256;
     uint8_t sha256_digest[CSHA256::OUTPUT_SIZE];
     string str;
+    uint8_t byte4[4];
     N.ToBytesBE(str);
     sha256.Write((const uint8_t *)(str.c_str()), str.length());
     h1.ToBytesBE(str);
@@ -88,6 +101,8 @@ bool DLNProof::Verify(const BN &N, const BN &h1, const BN &h2) const {
     for(int i = 0; i < ITERATIONS; ++i) {
         alpha_arr_[i].ToBytesBE(str);
         sha256.Write((const uint8_t *)(str.c_str()), str.length());
+        uint_to_byte4(byte4, str.length());
+        sha256.Write( byte4, 4);
     }
     if(salt_.length() > 0) {
         sha256.Write((const uint8_t *)(salt_.c_str()), salt_.length());
