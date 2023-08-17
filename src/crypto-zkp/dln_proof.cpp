@@ -1,6 +1,6 @@
 #include "dln_proof.h"
 #include <google/protobuf/util/json_util.h>
-#include "crypto-hash/sha256.h"
+#include "crypto-hash/safe_hash256.h"
 #include "crypto-bn/rand.h"
 #include "crypto-encode/base64.h"
 #include "exception/located_exception.h"
@@ -9,7 +9,7 @@ using std::string;
 using std::vector;
 using safeheron::bignum::BN;
 using safeheron::curve::CurvePoint;
-using safeheron::hash::CSHA256;
+using safeheron::hash::CSafeHash256;
 using google::protobuf::util::Status;
 using google::protobuf::util::MessageToJsonString;
 using google::protobuf::util::JsonStringToMessage;
@@ -37,8 +37,8 @@ void DLNProof::Prove(const BN &N, const BN &h1, const BN &h2, const BN &p, const
     }
 
     // Hash( N || h1 || h2 || alpha_arr_)
-    CSHA256 sha256;
-    uint8_t sha256_digest[CSHA256::OUTPUT_SIZE];
+    CSafeHash256 sha256;
+    uint8_t sha256_digest[CSafeHash256::OUTPUT_SIZE];
     string str;
     N.ToBytesBE(str);
     sha256.Write((const uint8_t *)(str.c_str()), str.length());
@@ -76,8 +76,8 @@ bool DLNProof::Verify(const BN &N, const BN &h1, const BN &h2) const {
     if(N.BitLength() < 2046)return false;
 
     // Hash( N || h1 || h2 || alpha_arr_)
-    CSHA256 sha256;
-    uint8_t sha256_digest[CSHA256::OUTPUT_SIZE];
+    CSafeHash256 sha256;
+    uint8_t sha256_digest[CSafeHash256::OUTPUT_SIZE];
     string str;
     N.ToBytesBE(str);
     sha256.Write((const uint8_t *)(str.c_str()), str.length());
